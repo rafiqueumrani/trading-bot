@@ -1,0 +1,8 @@
+config.json
+*.log
+*.pyc
+__pycache__/
+.env
+trades.csv
+state.json
+performance_metrics_*.json
