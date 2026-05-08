@@ -1,4 +1,4 @@
-# main.py - 50 SYMBOLS OPTIMIZED VERSION - PINE STRATEGY (EMA50/200 + RSI55/45 + ADX + Volume)
+# bot.py - 50 SYMBOLS OPTIMIZED VERSION - PINE STRATEGY (EMA50/200 + RSI55/45 + ADX + Volume)
 """
 50 SYMBOLS OPTIMIZED VERSION - PINE STRATEGY
 - PINE STRATEGY: EMA50/200 + RSI55/45 + ADX + Volume (REQUIRED)
@@ -458,13 +458,13 @@ ATR_TP2_MULT = ATR_TP_BASE_MULT * 2  # TP2: ATR × 2.4
 ATR_TP3_MULT = ATR_TP_BASE_MULT * 3  # TP3: ATR × 3.6
 
 # Log loaded Pine settings
-logger.info(f"PINE STRATEGY SETTINGS LOADED FROM CONFIG:")
-logger.info(f"EMA: {EMA_FAST}/{EMA_SLOW}, RSI: {RSI_LEN} (Long>={RSI_OVERBOUGHT}, Short<={RSI_OVERSOLD})")
-logger.info(f"ADX: {ADX_LEN} period, threshold {ADX_THR}")
-logger.info(f"Volume SMA: {VOLUME_PERIOD}, ATR: {ATR_LEN}")
-logger.info(f"SL Multiplier: {ATR_SL_MULT}, TP Base Multiplier: {ATR_TP_BASE_MULT}")
-logger.info(f"TP Multipliers: TP1=ATR×{ATR_TP1_MULT}, TP2=ATR×{ATR_TP2_MULT}, TP3=ATR×{ATR_TP3_MULT}")
-logger.info(f"Trail Multiplier: {ATR_TRAIL_MULT}, Use Trailing: {USE_TRAILING_STOP}")
+logger.info(f"📊 PINE STRATEGY SETTINGS LOADED FROM CONFIG:")
+logger.info(f"   EMA: {EMA_FAST}/{EMA_SLOW}, RSI: {RSI_LEN} (Long>={RSI_OVERBOUGHT}, Short<={RSI_OVERSOLD})")
+logger.info(f"   ADX: {ADX_LEN} period, threshold {ADX_THR}")
+logger.info(f"   Volume SMA: {VOLUME_PERIOD}, ATR: {ATR_LEN}")
+logger.info(f"   SL Multiplier: {ATR_SL_MULT}, TP Base Multiplier: {ATR_TP_BASE_MULT}")
+logger.info(f"   TP Multipliers: TP1=ATR×{ATR_TP1_MULT}, TP2=ATR×{ATR_TP2_MULT}, TP3=ATR×{ATR_TP3_MULT}")
+logger.info(f"   Trail Multiplier: {ATR_TRAIL_MULT}, Use Trailing: {USE_TRAILING_STOP}")
 
 # ============================================================================
 # OPTIONAL INDICATOR SETTINGS (TOGGLE ON/OFF)
@@ -482,10 +482,10 @@ MACD_SIGNAL = config_manager.get('indicators.macd_signal', 9)
 SUPPORT_RESISTANCE_PERIOD = config_manager.get('optional_indicators.support_resistance_period', 20)
 
 # Log optional indicator status
-logger.info(f" Optional Indicators: Volume={VOLUME_ENABLED}, MACD={MACD_ENABLED}, Support/Resistance={SUPPORT_RESISTANCE_ENABLED}")
-logger.info(f" Position Limits: Longs={MAX_LONG_TRADES}, Shorts={MAX_SHORT_TRADES}, Total={MAX_CONCURRENT_TRADES}")
-logger.info(f" Sector Limits: Max {MAX_POSITIONS_PER_SECTOR} positions per sector")
-logger.info(f" Sideways Detection: {'✅ ENABLED' if SIDEWAYS_ENABLED else '❌ DISABLED'} (ADX<{SIDEWAYS_ADX_THRESHOLD} or CI>{SIDEWAYS_CI_THRESHOLD})")
+logger.info(f"📊 Optional Indicators: Volume={VOLUME_ENABLED}, MACD={MACD_ENABLED}, Support/Resistance={SUPPORT_RESISTANCE_ENABLED}")
+logger.info(f"📊 Position Limits: Longs={MAX_LONG_TRADES}, Shorts={MAX_SHORT_TRADES}, Total={MAX_CONCURRENT_TRADES}")
+logger.info(f"📊 Sector Limits: Max {MAX_POSITIONS_PER_SECTOR} positions per sector")
+logger.info(f"📊 Sideways Detection: {'✅ ENABLED' if SIDEWAYS_ENABLED else '❌ DISABLED'} (ADX<{SIDEWAYS_ADX_THRESHOLD} or CI>{SIDEWAYS_CI_THRESHOLD})")
 
 # ============================================================================
 # OPTIONAL INDICATOR FUNCTIONS
@@ -582,7 +582,7 @@ def is_sideways_market(df: pd.DataFrame) -> bool:
         adx_current = adx_val.iloc[-1]
         
         if adx_current < SIDEWAYS_ADX_THRESHOLD:
-            logger.info(f" Sideways market detected (ADX: {adx_current:.1f} < {SIDEWAYS_ADX_THRESHOLD})")
+            logger.info(f"📉 Sideways market detected (ADX: {adx_current:.1f} < {SIDEWAYS_ADX_THRESHOLD})")
             return True
         
         period = 14
@@ -610,7 +610,7 @@ def is_sideways_market(df: pd.DataFrame) -> bool:
             return False
         
         if ci > SIDEWAYS_CI_THRESHOLD:
-            logger.info(f" Sideways market detected (Choppiness Index: {ci:.1f} > {SIDEWAYS_CI_THRESHOLD})")
+            logger.info(f"📉 Sideways market detected (Choppiness Index: {ci:.1f} > {SIDEWAYS_CI_THRESHOLD})")
             return True
         
         return False
@@ -671,7 +671,7 @@ class RiskManager:
             self.daily_pnl = 0
             self.daily_reset_time = now.replace(hour=0, minute=0, second=0)
             self.consecutive_losses = 0
-            logger.info(" Daily risk limits reset")
+            logger.info("🔄 Daily risk limits reset")
     
     def can_trade(self, symbol: str, side: str, capital: float, current_price: float) -> Tuple[bool, str]:
         """Check if trade is allowed based on risk rules including per-side limits and sector limits"""
@@ -698,7 +698,7 @@ class RiskManager:
                 elif trade_side == "short":
                     short_count += 1
         
-        logger.info(f" Current positions: Longs={long_count}/{self.max_long_trades}, Shorts={short_count}/{self.max_short_trades}, Total={total_trades}/{self.max_concurrent_trades}")
+        logger.info(f"📊 Current positions: Longs={long_count}/{self.max_long_trades}, Shorts={short_count}/{self.max_short_trades}, Total={total_trades}/{self.max_concurrent_trades}")
         
         if side == "long" and long_count >= self.max_long_trades:
             logger.warning(f"❌ LONG LIMIT REACHED: {long_count}/{self.max_long_trades}")
@@ -727,7 +727,7 @@ class RiskManager:
         if position_value > self.max_position_size_pct:
             return False, f"Position size {position_value:.1f}% exceeds {self.max_position_size_pct}%"
         
-        logger.info(f" Risk check passed for {symbol} {side}. Longs: {long_count}/{self.max_long_trades}, Shorts: {short_count}/{self.max_short_trades}, Total: {total_trades}/{self.max_concurrent_trades}, Sector {new_sector}: {current_sector_count + 1}/{self.max_positions_per_sector}")
+        logger.info(f"✅ Risk check passed for {symbol} {side}. Longs: {long_count}/{self.max_long_trades}, Shorts: {short_count}/{self.max_short_trades}, Total: {total_trades}/{self.max_concurrent_trades}, Sector {new_sector}: {current_sector_count + 1}/{self.max_positions_per_sector}")
         
         return True, "OK"
     
@@ -793,7 +793,7 @@ class MultiTimeframeAnalyzer:
                     signal, confidence = self.calculate_signal_on_timeframe(df, symbol, current_price, tf)
                     signals[tf] = signal
                     confidences[tf] = confidence
-                    logger.info(f" {symbol} - {tf} TF: Signal={signal}, Confidence={confidence:.1f}%")
+                    logger.info(f"📊 {symbol} - {tf} TF: Signal={signal}, Confidence={confidence:.1f}%")
             except Exception as e:
                 logger.error(f"Error analyzing {symbol} on {tf}: {e}")
                 signals[tf] = "HOLD"
@@ -930,7 +930,7 @@ class AdvancedOrderManager:
                 quantity=round(quantity, 6),
                 price=round(price, 6)
             )
-            logger.info(f" LIMIT order placed: {order}")
+            logger.info(f"✅ LIMIT order placed: {order}")
             return order
         except Exception as e:
             logger.error(f"Limit order failed for {symbol}: {e}")
@@ -1273,7 +1273,7 @@ def reset_crossover_states():
         state = load_state()
         state["ema_crossover_states"] = {}
         save_state(state)
-        logger.info(" Reset all EMA crossover states - ignoring historical signals")
+        logger.info("🔄 Reset all EMA crossover states - ignoring historical signals")
     except Exception as e:
         logger.error(f"Error resetting crossover states: {e}")
 
@@ -1895,7 +1895,7 @@ if FASTAPI_AVAILABLE:
             del open_trades[symbol]
             save_state(state)
             
-            logger.info(f" Manually closed {symbol} {side} trade at {current_price:.4f}, PnL: {pnl:.2f} USDT")
+            logger.info(f"✅ Manually closed {symbol} {side} trade at {current_price:.4f}, PnL: {pnl:.2f} USDT")
             
             return {
                 "message": f"Closed {symbol} {side} trade at {current_price:.4f}, PnL: {pnl:.2f} USDT",
@@ -2053,7 +2053,7 @@ if FASTAPI_AVAILABLE:
             if updated:
                 save_state(state)
                 message = f"Successfully updated {symbol} - " + ", ".join(updates)
-                logger.info(f" Manual update: {message}")
+                logger.info(f"✅ Manual update: {message}")
                 return {"message": message}
             else:
                 return {"error": "No valid parameters provided"}
@@ -2377,7 +2377,7 @@ def initialize_binance_client():
         socket.create_connection(("8.8.8.8", 53), timeout=5)
         
         if USE_TESTNET:
-            logger.info(" Configuring for BINANCE TESTNET")
+            logger.info("🔧 Configuring for BINANCE TESTNET")
             client = Client(
                 API_KEY, 
                 API_SECRET,
@@ -2386,8 +2386,8 @@ def initialize_binance_client():
             )
             try:
                 account = client.get_account()
-                logger.info(" Binance TESTNET connection SUCCESSFUL")
-                logger.info(f" Testnet Account: {account['accountType']}")
+                logger.info("✅ Binance TESTNET connection SUCCESSFUL")
+                logger.info(f"✅ Testnet Account: {account['accountType']}")
                 return True
             except Exception as e:
                 logger.error(f"❌ Testnet connection failed: {e}")
@@ -2395,7 +2395,7 @@ def initialize_binance_client():
         else:
             client = Client(API_KEY, API_SECRET, requests_params={"timeout": 15})
             client.get_account()
-            logger.info(" Binance MAINNET connection SUCCESSFUL")
+            logger.info("✅ Binance MAINNET connection SUCCESSFUL")
             return True
             
     except Exception as e:
@@ -2411,11 +2411,11 @@ def get_klines(symbol, interval='1h', limit=250):
         return cached_data
     
     if client is None:
-        logger.error(f" Binance client not initialized for {symbol}")
+        logger.error(f"❌ Binance client not initialized for {symbol}")
         return pd.DataFrame()
     
     try:
-        logger.info(f" Fetching ACTUAL Binance data for {symbol}")
+        logger.info(f"📊 Fetching ACTUAL Binance data for {symbol}")
         raw = client.get_klines(symbol=symbol, interval=interval, limit=limit)
         data = []
         for k in raw:
@@ -2437,7 +2437,7 @@ def get_klines(symbol, interval='1h', limit=250):
         if not df.empty:
             df.ffill(inplace=True)
             df.fillna(0, inplace=True)
-            logger.info(f" Successfully fetched {len(df)} ACTUAL klines for {symbol}")
+            logger.info(f"✅ Successfully fetched {len(df)} ACTUAL klines for {symbol}")
             data_cache.set(symbol, interval, limit, df)
         else:
             logger.error(f"❌ No data received for {symbol}")
@@ -2466,7 +2466,7 @@ def get_latest_price(symbol):
             response = requests.get(url, params={"symbol": symbol}, timeout=5)
             if response.status_code == 200:
                 price = float(response.json()['price'])
-                logger.info(f" REAL-TIME PRICE {symbol}: {price}")
+                logger.info(f"💰 REAL-TIME PRICE {symbol}: {price}")
                 return price
     except Exception as e:
         logger.error(f"❌ Failed to get price for {symbol}: {e}")
@@ -2480,7 +2480,7 @@ def get_validated_price(symbol, max_retries=3):
             if client is not None:
                 ticker = client.get_symbol_ticker(symbol=symbol)
                 price = float(ticker['price'])
-                logger.info(f" ACTUAL BINANCE PRICE: {symbol} = {price}")
+                logger.info(f"✅ ACTUAL BINANCE PRICE: {symbol} = {price}")
                 return price
             else:
                 if USE_TESTNET:
@@ -2492,7 +2492,7 @@ def get_validated_price(symbol, max_retries=3):
                 if response.status_code == 200:
                     data = response.json()
                     price = float(data['price'])
-                    logger.info(f" DIRECT API PRICE: {symbol} = {price}")
+                    logger.info(f"✅ DIRECT API PRICE: {symbol} = {price}")
                     return price
         except Exception as e:
             logger.warning(f"Attempt {attempt+1}: Error getting actual price for {symbol}: {e}")
@@ -2552,10 +2552,10 @@ def execute_trade_with_validation(side, symbol, quantity, price=None):
             logger.warning(f"⚠️ Risk check failed for {symbol}: {reason}")
             return False
         
-        logger.info(f" Executing {side.upper()} trade for {symbol} at validated price: {price}")
+        logger.info(f"✅ Executing {side.upper()} trade for {symbol} at validated price: {price}")
         
         if place_order(side, symbol, quantity):
-            logger.info(f" Successfully executed {side.upper()} trade for {symbol}")
+            logger.info(f"✅ Successfully executed {side.upper()} trade for {symbol}")
             return True
         else:
             logger.error(f"❌ Failed to execute {side.upper()} trade for {symbol}")
@@ -2594,11 +2594,11 @@ def calculate_proper_sl(symbol, entry_price, side, df):
         if side == "long":
             # Pine: longSL = close - atr * atrSLMult
             sl = entry_price - (atr_value * ATR_SL_MULT)
-            logger.info(f" LONG SL (Pine match): {sl:.8f} (entry - ATR×{ATR_SL_MULT})")
+            logger.info(f"📊 LONG SL (Pine match): {sl:.8f} (entry - ATR×{ATR_SL_MULT})")
         else:
             # Pine: shortSL = close + atr * atrSLMult
             sl = entry_price + (atr_value * ATR_SL_MULT)
-            logger.info(f" SHORT SL (Pine match): {sl:.8f} (entry + ATR×{ATR_SL_MULT})")
+            logger.info(f"📊 SHORT SL (Pine match): {sl:.8f} (entry + ATR×{ATR_SL_MULT})")
         
         return sl
         
@@ -2625,7 +2625,7 @@ def set_multi_tp_profit_distribution(symbol, entry_price, side, df, total_quanti
             tp2_price = entry_price + (atr_value * ATR_TP2_MULT)
             tp3_price = entry_price + (atr_value * ATR_TP3_MULT)
             
-            logger.info(f" LONG TP Calculated (ATR={atr_value:.8f}):")
+            logger.info(f"📊 LONG TP Calculated (ATR={atr_value:.8f}):")
             logger.info(f"   TP1={tp1_price:.8f} (ATR×{ATR_TP1_MULT})")
             logger.info(f"   TP2={tp2_price:.8f} (ATR×{ATR_TP2_MULT})")
             logger.info(f"   TP3={tp3_price:.8f} (ATR×{ATR_TP3_MULT})")
@@ -2634,7 +2634,7 @@ def set_multi_tp_profit_distribution(symbol, entry_price, side, df, total_quanti
             tp2_price = entry_price - (atr_value * ATR_TP2_MULT)
             tp3_price = entry_price - (atr_value * ATR_TP3_MULT)
             
-            logger.info(f" SHORT TP Calculated (ATR={atr_value:.8f}):")
+            logger.info(f"📊 SHORT TP Calculated (ATR={atr_value:.8f}):")
             logger.info(f"   TP1={tp1_price:.8f} (ATR×{ATR_TP1_MULT})")
             logger.info(f"   TP2={tp2_price:.8f} (ATR×{ATR_TP2_MULT})")
             logger.info(f"   TP3={tp3_price:.8f} (ATR×{ATR_TP3_MULT})")
@@ -2668,7 +2668,7 @@ def set_multi_tp_profit_distribution(symbol, entry_price, side, df, total_quanti
             state["open_trades"][symbol]["trailing_distance_percent"] = TRAILING_DISTANCE_PERCENT
             
             save_state(state)
-            logger.info(f" Multi-TP set for {symbol} (ATR-based, Pine match)")
+            logger.info(f"✅ Multi-TP set for {symbol} (ATR-based, Pine match)")
             logger.info(f"   SL: {initial_sl:.8f} (ATR×{ATR_SL_MULT})")
             logger.info(f"   TP1: {tp1_price:.8f} (ATR×{ATR_TP1_MULT}) - {TP1_CLOSE_PERCENT*100}%")
             logger.info(f"   TP2: {tp2_price:.8f} (ATR×{ATR_TP2_MULT}) - {TP2_CLOSE_PERCENT*100}%")
@@ -2715,7 +2715,7 @@ def check_tp_targets_with_partial_close(symbol, current_price, trade_info):
                 tp1_quantity = float(tp_targets["tp1"]["quantity"])
                 close_side = "sell" if side == "long" else "buy"
                 
-                logger.info(f" TP1 Hit for {symbol}! Price: {current_price:.8f} (Target: {tp1_price:.8f})")
+                logger.info(f"🎯 TP1 Hit for {symbol}! Price: {current_price:.8f} (Target: {tp1_price:.8f})")
                 logger.info(f"   Closing {tp1_quantity:.6f} ({TP1_CLOSE_PERCENT*100}%) as {close_side.upper()}")
                 
                 if execute_trade_with_validation(close_side, symbol, tp1_quantity, current_price):
@@ -2752,7 +2752,7 @@ def check_tp_targets_with_partial_close(symbol, current_price, trade_info):
                 tp2_quantity = float(tp_targets["tp2"]["quantity"])
                 close_side = "sell" if side == "long" else "buy"
                 
-                logger.info(f" TP2 Hit for {symbol}! Price: {current_price:.8f} (Target: {tp2_price:.8f})")
+                logger.info(f"🎯 TP2 Hit for {symbol}! Price: {current_price:.8f} (Target: {tp2_price:.8f})")
                 logger.info(f"   Closing {tp2_quantity:.6f} ({TP2_CLOSE_PERCENT*100}%) as {close_side.upper()}")
                 
                 if execute_trade_with_validation(close_side, symbol, tp2_quantity, current_price):
@@ -2774,7 +2774,7 @@ def check_tp_targets_with_partial_close(symbol, current_price, trade_info):
                     log_partial_close(symbol, side, entry_price, current_price, tp2_quantity,
                                     trade_data.get("trade_num", 0), "TP2", tp2_profit)
                     
-                    logger.info(f" Additional Profit: {tp2_profit:.2f} USDT - SL moved to TP1 ({tp1_price:.8f})")
+                    logger.info(f"💰 Additional Profit: {tp2_profit:.2f} USDT - SL moved to TP1 ({tp1_price:.8f})")
                 else:
                     logger.error(f"❌ TP2 execution FAILED for {symbol}")
         
@@ -2790,7 +2790,7 @@ def check_tp_targets_with_partial_close(symbol, current_price, trade_info):
                 tp3_quantity = float(tp_targets["tp3"]["quantity"])
                 close_side = "sell" if side == "long" else "buy"
                 
-                logger.info(f" TP3 Hit for {symbol}! Price: {current_price:.8f} (Target: {tp3_price:.8f})")
+                logger.info(f"🎯 TP3 Hit for {symbol}! Price: {current_price:.8f} (Target: {tp3_price:.8f})")
                 logger.info(f"   Closing {tp3_quantity:.6f} ({TP3_CLOSE_PERCENT*100}%) as {close_side.upper()}")
                 
                 if execute_trade_with_validation(close_side, symbol, tp3_quantity, current_price):
@@ -2813,14 +2813,14 @@ def check_tp_targets_with_partial_close(symbol, current_price, trade_info):
                     log_partial_close(symbol, side, entry_price, current_price, tp3_quantity,
                                     trade_data.get("trade_num", 0), "TP3", tp3_profit)
                     
-                    logger.info(f" Additional Profit: {tp3_profit:.2f} USDT")
-                    logger.info(f" Trailing stop ACTIVATED for remaining {trade_data['remaining_quantity']:.6f} {symbol}")
+                    logger.info(f"💰 Additional Profit: {tp3_profit:.2f} USDT")
+                    logger.info(f"🚀 Trailing stop ACTIVATED for remaining {trade_data['remaining_quantity']:.6f} {symbol}")
                 else:
-                    logger.error(f" TP3 execution FAILED for {symbol}")
+                    logger.error(f"❌ TP3 execution FAILED for {symbol}")
         
         if updated:
             save_state(state)
-            logger.info(f" TP update saved for {symbol}")
+            logger.info(f"✅ TP update saved for {symbol}")
         
         return updated
         
@@ -2883,7 +2883,7 @@ def update_trailing_stop(symbol, current_price, trade_info):
             if new_trailing_stop > current_sl:
                 trade_data["sl"] = new_trailing_stop
                 updated = True
-                logger.info(f" Trailing SL updated for {symbol}: {new_trailing_stop:.8f} (Current: {current_price:.8f})")
+                logger.info(f"📈 Trailing SL updated for {symbol}: {new_trailing_stop:.8f} (Current: {current_price:.8f})")
         else:
             if current_price < lowest_price:
                 trade_data["lowest_price"] = current_price
@@ -2896,7 +2896,7 @@ def update_trailing_stop(symbol, current_price, trade_info):
             if new_trailing_stop < current_sl:
                 trade_data["sl"] = new_trailing_stop
                 updated = True
-                logger.info(f" Trailing SL updated for {symbol}: {new_trailing_stop:.8f} (Current: {current_price:.8f})")
+                logger.info(f"📉 Trailing SL updated for {symbol}: {new_trailing_stop:.8f} (Current: {current_price:.8f})")
         
         if updated:
             save_state(state)
@@ -2926,13 +2926,13 @@ def check_sl_tp(symbol, current_price, trade_info):
         sl_hit = False
         if side == "long" and current_price <= sl_price + epsilon:
             sl_hit = True
-            logger.info(f" LONG SL CONDITION MET: Current={current_price:.8f} <= SL={sl_price:.8f}")
+            logger.info(f"🛑 LONG SL CONDITION MET: Current={current_price:.8f} <= SL={sl_price:.8f}")
         elif side == "short" and current_price >= sl_price - epsilon:
             sl_hit = True
-            logger.info(f" SHORT SL CONDITION MET: Current={current_price:.8f} >= SL={sl_price:.8f}")
+            logger.info(f"🛑 SHORT SL CONDITION MET: Current={current_price:.8f} >= SL={sl_price:.8f}")
         
         if sl_hit and remaining_quantity > 0:
-            logger.info(f" SL EXECUTING for {symbol} {side.upper()} at {current_price:.8f} (SL: {sl_price:.8f})")
+            logger.info(f"🛑 SL EXECUTING for {symbol} {side.upper()} at {current_price:.8f} (SL: {sl_price:.8f})")
             
             if execute_trade_with_validation("sell" if side == "long" else "buy", 
                                            symbol, remaining_quantity, current_price):
@@ -2941,7 +2941,7 @@ def check_sl_tp(symbol, current_price, trade_info):
                 else:
                     pnl = (trade_info.get("entry_price", 0) - current_price) * remaining_quantity
                 risk_manager.update_after_trade(pnl)
-                logger.info(f" SL executed for {symbol}, PnL: {pnl:.2f} USDT")
+                logger.info(f"✅ SL executed for {symbol}, PnL: {pnl:.2f} USDT")
                 return "SL"
             else:
                 logger.error(f"❌ SL execution FAILED for {symbol}")
@@ -3053,7 +3053,7 @@ def log_close(symbol, side, entry_price, exit_price, qty, trade_num, reason="Man
         
         success = append_trade_row(row)
         if success:
-            logger.info(f" Logged CLOSE trade #{trade_num} for {symbol} {side} at {exit_price:.8f}, PnL: {pnl} ({reason})")
+            logger.info(f"✅ Logged CLOSE trade #{trade_num} for {symbol} {side} at {exit_price:.8f}, PnL: {pnl} ({reason})")
             
             try:
                 _update_stats_from_pnl(side, pnl)
@@ -3118,12 +3118,12 @@ def check_trading_signal(df, symbol, current_price):
         
         # ========== FRESH SIGNAL CHECK: Only trade candles AFTER bot started ==========
         if candle_close_time < BOT_START_TIME:
-            logger.info(f" {symbol} - Signal from OLD candle ({candle_close_time.strftime('%Y-%m-%d %H:%M:%S')}), ignoring (Bot started at {BOT_START_TIME.strftime('%Y-%m-%d %H:%M:%S')})")
+            logger.info(f"⚠️ {symbol} - Signal from OLD candle ({candle_close_time.strftime('%Y-%m-%d %H:%M:%S')}), ignoring (Bot started at {BOT_START_TIME.strftime('%Y-%m-%d %H:%M:%S')})")
             return "HOLD"
         
         # ========== SIDEWAYS MARKET DETECTION ==========
         if SIDEWAYS_ENABLED and is_sideways_market(df):
-            logger.info(f" {symbol} - Market is sideways/choppy, skipping trade")
+            logger.info(f"📊 {symbol} - Market is sideways/choppy, skipping trade")
             return "HOLD"
         
         # ========== CALCULATE INDICATORS using ALL closed candles ==========
@@ -3182,7 +3182,7 @@ def check_trading_signal(df, symbol, current_price):
         adx_ok = adx_current >= ADX_THR
         
         # ========== DETAILED LOGGING ==========
-        logger.info(f" {symbol} - PINE SIGNAL CHECK (Candle: {candle_close_time.strftime('%Y-%m-%d %H:%M:%S')})")
+        logger.info(f"📊 {symbol} - PINE SIGNAL CHECK (Candle: {candle_close_time.strftime('%Y-%m-%d %H:%M:%S')})")
         logger.info(f"   Price: {candle_close:.8f}, EMA{EMA_FAST}: {ema_fast_current:.8f}, EMA{EMA_SLOW}: {ema_slow_current:.8f}")
         logger.info(f"   RSI: {rsi_current:.1f} (Long>={RSI_OVERBOUGHT}: {rsi_long_ok}, Short<={RSI_OVERSOLD}: {rsi_short_ok})")
         logger.info(f"   ADX: {adx_current:.1f} (>={ADX_THR}: {adx_ok})")
@@ -3196,21 +3196,21 @@ def check_trading_signal(df, symbol, current_price):
         
         # ========== FINAL SIGNAL ==========
         if long_trigger:
-            logger.info(f" LONG SIGNAL for {symbol} - ALL CONDITIONS PASSED (FRESH CLOSED CANDLE)")
-            logger.info(f"    EMA{EMA_FAST} > EMA{EMA_SLOW}: {ema_fast_current:.2f} > {ema_slow_current:.2f}")
-            logger.info(f"    CROSSOVER: {close_prev:.2f} <= {ema_fast_prev:.2f} and {candle_close:.2f} > {ema_fast_current:.2f}")
-            logger.info(f"    RSI >= {RSI_OVERBOUGHT}: {rsi_current:.1f}")
-            logger.info(f"    Volume > SMA{VOLUME_PERIOD}: {candle_volume:.0f} > {vol_sma_current:.0f}")
-            logger.info(f"    ADX >= {ADX_THR}: {adx_current:.1f}")
+            logger.info(f"🎯 LONG SIGNAL for {symbol} - ALL CONDITIONS PASSED (FRESH CLOSED CANDLE)")
+            logger.info(f"   ✅ EMA{EMA_FAST} > EMA{EMA_SLOW}: {ema_fast_current:.2f} > {ema_slow_current:.2f}")
+            logger.info(f"   ✅ CROSSOVER: {close_prev:.2f} <= {ema_fast_prev:.2f} and {candle_close:.2f} > {ema_fast_current:.2f}")
+            logger.info(f"   ✅ RSI >= {RSI_OVERBOUGHT}: {rsi_current:.1f}")
+            logger.info(f"   ✅ Volume > SMA{VOLUME_PERIOD}: {candle_volume:.0f} > {vol_sma_current:.0f}")
+            logger.info(f"   ✅ ADX >= {ADX_THR}: {adx_current:.1f}")
             return "BUY"
         
         elif short_trigger:
-            logger.info(f" SHORT SIGNAL for {symbol} - ALL CONDITIONS PASSED (FRESH CLOSED CANDLE)")
-            logger.info(f"    EMA{EMA_FAST} < EMA{EMA_SLOW}: {ema_fast_current:.2f} < {ema_slow_current:.2f}")
-            logger.info(f"    CROSSUNDER: {close_prev:.2f} >= {ema_fast_prev:.2f} and {candle_close:.2f} < {ema_fast_current:.2f}")
-            logger.info(f"    RSI <= {RSI_OVERSOLD}: {rsi_current:.1f}")
-            logger.info(f"    Volume > SMA{VOLUME_PERIOD}: {candle_volume:.0f} > {vol_sma_current:.0f}")
-            logger.info(f"    ADX >= {ADX_THR}: {adx_current:.1f}")
+            logger.info(f"🎯 SHORT SIGNAL for {symbol} - ALL CONDITIONS PASSED (FRESH CLOSED CANDLE)")
+            logger.info(f"   ✅ EMA{EMA_FAST} < EMA{EMA_SLOW}: {ema_fast_current:.2f} < {ema_slow_current:.2f}")
+            logger.info(f"   ✅ CROSSUNDER: {close_prev:.2f} >= {ema_fast_prev:.2f} and {candle_close:.2f} < {ema_fast_current:.2f}")
+            logger.info(f"   ✅ RSI <= {RSI_OVERSOLD}: {rsi_current:.1f}")
+            logger.info(f"   ✅ Volume > SMA{VOLUME_PERIOD}: {candle_volume:.0f} > {vol_sma_current:.0f}")
+            logger.info(f"   ✅ ADX >= {ADX_THR}: {adx_current:.1f}")
             return "SELL"
         
         return "HOLD"
@@ -3285,10 +3285,10 @@ def manage_open_trades(symbol, current_price, signal):
         logger.error(f"Error managing open trades for {symbol}: {e}")
 
 def strategy_loop(symbol):
-    logger.info(f" Starting PINE STRATEGY bot for {symbol}")
-    logger.info(f" Bot started at: {BOT_START_TIME.strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.info(f" Using 1h timeframe - Will only trade signals from closed candles AFTER this time")
-    logger.info(f" Pine Settings: EMA{EMA_FAST}/{EMA_SLOW}, RSI{RSI_LEN}({RSI_OVERBOUGHT}/{RSI_OVERSOLD}), ADX{ADX_LEN}({ADX_THR})")
+    logger.info(f"🚀 Starting PINE STRATEGY bot for {symbol}")
+    logger.info(f"⏰ Bot started at: {BOT_START_TIME.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"📊 Using 1h timeframe - Will only trade signals from closed candles AFTER this time")
+    logger.info(f"📊 Pine Settings: EMA{EMA_FAST}/{EMA_SLOW}, RSI{RSI_LEN}({RSI_OVERBOUGHT}/{RSI_OVERSOLD}), ADX{ADX_LEN}({ADX_THR})")
     
     consecutive_count = 0
     last_trade_time = None
@@ -3322,7 +3322,7 @@ def strategy_loop(symbol):
                 time.sleep(CHECK_INTERVAL)
                 continue
             
-            logger.info(f" {symbol} ACTUAL Price: {current_price:.8f}")
+            logger.info(f"💰 {symbol} ACTUAL Price: {current_price:.8f}")
             
             # Check signal using ONLY closed candles
             signal = check_trading_signal(df, symbol, current_price)
@@ -3346,7 +3346,7 @@ def strategy_loop(symbol):
                 else:
                     if signal != "HOLD":
                         consecutive_count += 1
-                        logger.info(f" Signal confirmation {consecutive_count}/{CONFIRMATION_REQUIRED} for {symbol} ({signal})")
+                        logger.info(f"✅ Signal confirmation {consecutive_count}/{CONFIRMATION_REQUIRED} for {symbol} ({signal})")
                     else:
                         consecutive_count = 0
                 
@@ -3360,7 +3360,7 @@ def strategy_loop(symbol):
                     
                     total_quantity = calculate_quantity(current_price)
                     if total_quantity > 0:
-                        logger.info(f" ENTERING {signal} trade for {symbol} after {consecutive_count} confirmations")
+                        logger.info(f"🎯 ENTERING {signal} trade for {symbol} after {consecutive_count} confirmations")
                         
                         execute_success = execute_trade_with_validation("buy" if signal == "BUY" else "sell", 
                                                        symbol, total_quantity, current_price)
@@ -3410,149 +3410,185 @@ def strategy_loop(symbol):
                             consecutive_count = 0
                             last_trade_time = current_time
                             last_signal = "HOLD"
-                            logger.info(f" Cooldown period started for {symbol}")
+                            logger.info(f"⏳ Cooldown period started for {symbol}")
                         else:
                             logger.error(f"❌ Failed to execute trade for {symbol}")
                             consecutive_count = 0
             else:
                 if signal != "HOLD":
-                    logger.info(f" {symbol} has open {open_trades[symbol].get('side', 'unknown')} trade, ignoring {signal} signal")
+                    logger.info(f"📊 {symbol} has open {open_trades[symbol].get('side', 'unknown')} trade, ignoring {signal} signal")
                 consecutive_count = 0
             
-            logger.info(f" {symbol} - Signal: {signal}, Confirmations: {consecutive_count}/{CONFIRMATION_REQUIRED}, Open Trade: {'Yes' if symbol in open_trades else 'No'}")
+            logger.info(f"✅ {symbol} - Signal: {signal}, Confirmations: {consecutive_count}/{CONFIRMATION_REQUIRED}, Open Trade: {'Yes' if symbol in open_trades else 'No'}")
                 
         except Exception as e:
             logger.error(f"❌ Error in strategy_loop for {symbol}: {e}")
         
         time.sleep(CHECK_INTERVAL)
 
-# ============================================================================
-# ENTRY POINT FOR RAILWAY - ADDED WITHOUT MODIFYING EXISTING CODE
-# ============================================================================
-
-def main():
-    """Entry point for Railway deployment - calls your existing __main__ logic"""
-    import argparse
-    import sys
-    
-    # Parse arguments
-    parser = argparse.ArgumentParser(description="Trading Bot - Institute Grade with PINE STRATEGY EXACT MATCH")
-    parser.add_argument("--clear-history", action="store_true", help="Clear trades.csv and state.json then exit")
-    parser.add_argument("--symbol", type=str, help="Run bot for a single symbol")
-    parser.add_argument("--all", action="store_true", help="Run bot for all symbols in SYMBOLS list")
-    parser.add_argument("--confirmations", type=int, help="Override CONFIRMATION_REQUIRED")
-    parser.add_argument("--check", action="store_true", help="Run health checks and exit")
-    parser.add_argument("--reset", action="store_true", help="Clear trade history and state")
-    parser.add_argument("--dry-run", action="store_true", help="Force dry run mode")
-    
-    # If no args provided, default to --all for Railway
-    if len(sys.argv) == 1:
-        sys.argv.append("--all")
-    
-    args = parser.parse_args()
-    
-    # Set global variables
-    global CONFIRMATION_REQUIRED, DRY_RUN
-    
-    if args.clear_history or args.reset:
-        reset_history()
-        reset_crossover_states()
-        logger.info(" Trade history and EMA crossover states reset successfully")
-        if args.clear_history:
-            return
-    
-    if args.check:
-        ensure_files()
-        logger.info(" Health checks passed")
-        cache_stats = data_cache.get_stats()
-        session_stats = binance_session.get_stats()
-        logger.info(f" Cache stats: {cache_stats}")
-        logger.info(f" Session stats: {session_stats}")
-        return
-    
-    if args.confirmations is not None:
-        CONFIRMATION_REQUIRED = max(1, int(args.confirmations))
-        logger.info(f" CONFIRMATION_REQUIRED set to {CONFIRMATION_REQUIRED} from CLI")
-    
-    if args.dry_run:
-        DRY_RUN = True
-        logger.info(" DRY_RUN set to True from CLI")
-    
-    # Determine symbols to run
-    if args.symbol:
-        symbols_to_run = [args.symbol]
-    elif args.all:
-        symbols_to_run = SYMBOLS
-    else:
-        symbols_to_run = SYMBOLS
-        logger.info(f" Running for {len(symbols_to_run)} symbols")
-    
-    # Reset crossover states on startup
-    reset_crossover_states()
-    logger.info(f" Reset all crossover states - Bot will only trade FRESH signals")
-    logger.info(f" Bot start time recorded: {BOT_START_TIME.strftime('%Y-%m-%d %H:%M:%S')}")
-    
-    # Initialize Binance client
-    binance_connected = initialize_binance_client()
-    
-    if not binance_connected:
-        logger.error("🚫 CRITICAL: Cannot connect to Binance. Please check API keys and internet connection.")
-        return
-    
-    ensure_files()
-    state = load_state()
-    logger.info(f" Loaded state with {len(state.get('open_trades', {}))} open trades")
-    
-    # Start trading bots
-    threads = []
-    for symbol in symbols_to_run:
-        t = threading.Thread(target=strategy_loop, args=(symbol,), daemon=True)
-        t.start()
-        threads.append(t)
-        logger.info(f" Started bot for {symbol}")
-        time.sleep(0.5)
-    
-    logger.info(f" Started {len(threads)} trading bots with PINE STRATEGY EXACT MATCH")
-    
-    # Start monitoring thread
-    def monitor_loop():
-        while True:
-            try:
-                performance_monitor.update_metrics()
-                cache_stats = data_cache.get_stats()
-                session_stats = binance_session.get_stats()
-                logger.debug(f"📊 Cache: {cache_stats['hit_rate']} hit rate, {cache_stats['cache_size']} items")
-                logger.debug(f"📊 API: {session_stats['total_requests']} total requests")
-                time.sleep(60)
-            except Exception as e:
-                logger.error(f"Monitor error: {e}")
-                time.sleep(60)
-    
-    monitor_thread = threading.Thread(target=monitor_loop, daemon=True)
-    monitor_thread.start()
-    
-    # Start FastAPI server if available
-    if FASTAPI_AVAILABLE:
-        logger.info(f" Starting FastAPI server on http://0.0.0.0:{PORT}")
-        logger.info(f" Dashboard credentials: {DASHBOARD_USER} / {DASHBOARD_PASSWORD}")
-        logger.info(" Trading Bot is now ACTIVE with PINE STRATEGY EXACT MATCH...")
-        
-        try:
-            uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="error")
-        except KeyboardInterrupt:
-            logger.info(" Bot stopped by user (Ctrl+C)")
-        except Exception as e:
-            logger.error(f" API server error: {e}")
-    else:
-        logger.info(" FastAPI not available - running in console mode only")
-        logger.info(" Trading Bot is now ACTIVE (console mode)...")
-        
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            logger.info(" Bot stopped by user (Ctrl+C)")
-
-# This is the entry point for Railway
 if __name__ == "__main__":
-    main()
+    try:
+        parser = argparse.ArgumentParser(description="Trading Bot - Institute Grade with PINE STRATEGY EXACT MATCH")
+        parser.add_argument("--clear-history", action="store_true", help="Clear trades.csv and state.json then exit")
+        parser.add_argument("--symbol", type=str, help="Run bot for a single symbol")
+        parser.add_argument("--all", action="store_true", help="Run bot for all symbols in SYMBOLS list")
+        parser.add_argument("--confirmations", type=int, help="Override CONFIRMATION_REQUIRED")
+        parser.add_argument("--check", action="store_true", help="Run health checks and exit")
+        parser.add_argument("--reset", action="store_true", help="Clear trade history and state")
+        parser.add_argument("--dry-run", action="store_true", help="Force dry run mode")
+        args = parser.parse_args()
+
+        logger.info("🤖 Trading Bot Starting with PINE STRATEGY EXACT MATCH (EMA50/200 + RSI55/45 + ADX20 + Volume)")
+        logger.info("📊 Features: Risk Management | 3-TP System | ATR-Based SL/TP | Fresh Signals Only | Per-Side Limits")
+        logger.info("🚀 Pine Match: Uses ONLY closed candles | ATR-based SL | Proper crossover detection")
+
+        if args.clear_history or args.reset:
+            reset_history()
+            reset_crossover_states()
+            logger.info("🗑️ Trade history and EMA crossover states reset successfully")
+            if args.clear_history:
+                exit(0)
+
+        if args.check:
+            ensure_files()
+            logger.info("✅ Health checks passed")
+            cache_stats = data_cache.get_stats()
+            session_stats = binance_session.get_stats()
+            logger.info(f"📊 Cache stats: {cache_stats}")
+            logger.info(f"📊 Session stats: {session_stats}")
+            exit(0)
+
+        if args.confirmations is not None:
+            CONFIRMATION_REQUIRED = max(1, int(args.confirmations))
+            logger.info(f"⚙️ CONFIRMATION_REQUIRED set to {CONFIRMATION_REQUIRED} from CLI")
+
+        if args.dry_run:
+            DRY_RUN = True
+            logger.info("⚙️ DRY_RUN set to True from CLI")
+
+        if args.symbol:
+            symbols_to_run = [args.symbol]
+        elif args.all:
+            symbols_to_run = SYMBOLS
+        else:
+            symbols_to_run = SYMBOLS
+            logger.info(f"🔧 Running for {len(symbols_to_run)} symbols")
+
+        # Reset crossover states on startup to ignore historical signals
+        reset_crossover_states()
+        logger.info(f"🔄 Reset all crossover states - Bot will only trade FRESH signals")
+        logger.info(f"⏰ Bot start time recorded: {BOT_START_TIME.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"📊 Bot will ONLY trade signals from candles AFTER this time")
+
+        binance_connected = initialize_binance_client()
+        
+        if not binance_connected:
+            logger.error("🚫 CRITICAL: Cannot connect to Binance. Please check API keys and internet connection.")
+            exit(1)
+
+        ensure_files()
+        state = load_state()
+        logger.info(f"📂 Loaded state with {len(state.get('open_trades', {}))} open trades")
+        
+        ema_states = load_ema_crossover_states()
+        logger.info(f"📊 Loaded EMA crossover states for {len(ema_states)} symbols")
+
+        logger.info("🚀 === INSTITUTE GRADE TRADING BOT STARTUP SUMMARY ===")
+        logger.info(f"   TOTAL SYMBOLS: {len(SYMBOLS)}")
+        logger.info(f"   RUNNING SYMBOLS: {len(symbols_to_run)}")
+        logger.info(f"   BOT START TIME: {BOT_START_TIME.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"   SIGNAL FRESHNESS: Only signals from candles AFTER bot start")
+        logger.info(f"   CANDLE CLOSE CHECK: Bot uses ONLY closed candles (matches TradingView)")
+        logger.info(f"   RISK MANAGEMENT: ✅ ACTIVE")
+        logger.info(f"   MULTI-TIMEFRAME ANALYSIS: ✅ ACTIVE")
+        logger.info(f"   PERFORMANCE MONITORING: ✅ ACTIVE")
+        logger.info(f"   CONNECTION POOLING: ✅ ACTIVE")
+        logger.info(f"   DATA CACHING: ✅ ACTIVE (30s TTL)")
+        logger.info(f"   DASHBOARD AUTH: ✅ ACTIVE")
+        logger.info(f"   TRADE HISTORY: ✅ FIXED (Cumulative P&L)")
+        logger.info(f"   MANUAL TRADE CLOSURE: ✅ ACTIVE")
+        logger.info(f"   PER-SIDE POSITION LIMITS: ✅ ACTIVE (Longs: {risk_manager.max_long_trades}, Shorts: {risk_manager.max_short_trades})")
+        logger.info(f"   SECTOR-BASED LIMITS: ✅ ACTIVE (Max {MAX_POSITIONS_PER_SECTOR} positions per sector)")
+        logger.info(f"   TP TRIGGER: ✅ FIXED (Better price comparison)")
+        logger.info(f"   SIDEWAYS MARKET DETECTION: {'✅ ACTIVE' if SIDEWAYS_ENABLED else '❌ DISABLED'}")
+        logger.info(f"   PINE STRATEGY PARAMETERS (from config.json):")
+        logger.info(f"      - EMA Fast: {EMA_FAST}, EMA Slow: {EMA_SLOW}")
+        logger.info(f"      - RSI Length: {RSI_LEN}, Long Level: {RSI_OVERBOUGHT}, Short Level: {RSI_OVERSOLD}")
+        logger.info(f"      - ADX Length: {ADX_LEN}, Threshold: {ADX_THR}")
+        logger.info(f"      - Volume SMA Period: {VOLUME_PERIOD}")
+        logger.info(f"      - ATR SL Multiplier: {ATR_SL_MULT}")
+        logger.info(f"      - ATR TP Base Multiplier: {ATR_TP_BASE_MULT} (TP1=×{ATR_TP1_MULT}, TP2=×{ATR_TP2_MULT}, TP3=×{ATR_TP3_MULT})")
+        logger.info(f"   Confirmations Required: {CONFIRMATION_REQUIRED}")
+        logger.info(f"   Trade Size: {TRADE_USDT} USDT")
+        logger.info(f"   Total Capital: {risk_manager.total_capital} USDT")
+        logger.info(f"   Dry Run: {DRY_RUN}")
+        logger.info(f"   Max Daily Loss: {risk_manager.max_daily_loss} USDT")
+        logger.info(f"   Max Concurrent Trades: {risk_manager.max_concurrent_trades}")
+        if DASHBOARD_USER == "admin" and DASHBOARD_PASSWORD == "changeme":
+            logger.warning("⚠️ DASHBOARD USING DEFAULT CREDENTIALS! Change DASHBOARD_USER and DASHBOARD_PASSWORD in .env")
+        else:
+            logger.info(f"   Dashboard Auth: Enabled (user: {DASHBOARD_USER})")
+
+        try:
+            threads = []
+            for symbol in symbols_to_run:
+                t = threading.Thread(target=strategy_loop, args=(symbol,), daemon=True)
+                t.start()
+                threads.append(t)
+                logger.info(f"✅ Started bot for {symbol}")
+                time.sleep(0.5)
+            
+            logger.info(f"✅ Started {len(threads)} trading bots with PINE STRATEGY EXACT MATCH")
+            logger.info("⏳ PINE CONDITIONS: EMA crossover + RSI + Volume > SMA + ADX >= threshold")
+            logger.info("⏳ FRESH SIGNAL ONLY: Bot will only trade signals that occurred AFTER bot startup")
+            logger.info("⏳ CLOSED CANDLE ONLY: Bot uses ONLY closed candles (matches TradingView)")
+            logger.info("⏳ ATR-BASED SL/TP: Matching Pine's ATR multiplier approach")
+            logger.info("⏳ 3-TP SYSTEM: TP1=ATR×1.2 (35%), TP2=ATR×2.4 (30%), TP3=ATR×3.6 (20%), Trail 15%")
+            
+            def monitor_loop():
+                while True:
+                    try:
+                        performance_monitor.update_metrics()
+                        cache_stats = data_cache.get_stats()
+                        session_stats = binance_session.get_stats()
+                        logger.debug(f"📊 Cache: {cache_stats['hit_rate']} hit rate, {cache_stats['cache_size']} items")
+                        logger.debug(f"📊 API: {session_stats['total_requests']} total requests")
+                        time.sleep(60)
+                    except Exception as e:
+                        logger.error(f"Monitor error: {e}")
+                        time.sleep(60)
+            
+            monitor_thread = threading.Thread(target=monitor_loop, daemon=True)
+            monitor_thread.start()
+            
+        except Exception as e:
+            logger.error(f"❌ Error starting trading bots: {e}")
+            exit(1)
+
+        if FASTAPI_AVAILABLE:
+            logger.info(f"🌐 Starting FastAPI server on http://0.0.0.0:{PORT}")
+            logger.info(f"🔐 Dashboard credentials: {DASHBOARD_USER} / {DASHBOARD_PASSWORD}")
+            logger.info("⏳ Trading Bot is now ACTIVE with PINE STRATEGY EXACT MATCH...")
+            logger.info("📍 Use Ctrl+C to stop the bot")
+            
+            try:
+                uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="error")
+            except KeyboardInterrupt:
+                logger.info("👋 Bot stopped by user (Ctrl+C)")
+            except Exception as e:
+                logger.error(f"❌ API server error: {e}")
+        else:
+            logger.info("🌐 FastAPI not available - running in console mode only")
+            logger.info("⏳ Trading Bot is now ACTIVE (console mode)...")
+            logger.info("📍 Use Ctrl+C to stop the bot")
+            
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                logger.info("👋 Bot stopped by user (Ctrl+C)")
+            
+    except Exception as e:
+        logger.critical(f"💥 Critical error in main execution: {e}")
+        logger.critical(traceback.format_exc())
+        exit(1)
