@@ -1,0 +1,57 @@
+{
+  "exchange": "binance",
+  "testnet": true,
+  "disable_circuit_breaker": true,
+  "api_key": "BNW6MVxibKFw0Y735ajOxUpJVBw0A1jZpIMmSxt5YOHOjS3lonsDurrzSxwDK8Wi",
+  "secret_key": "pMYHgk4vD1QmitYqIePCo9aaqe6K62FSXqzfMgusQoeY3ZftVHPKWkI31G3H1uWu",
+  "base_url": "https://testnet.binance.vision",
+  "initial_balance": 10000,
+  
+  "symbols": ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT"],
+  
+  "trading": {
+    "max_concurrent_trades": 10,
+    "max_long_trades": 5,
+    "max_short_trades": 5,
+    "max_positions_per_sector": 5,
+    "max_daily_loss": 500,
+    "total_capital": 10000
+  },
+  
+  "pine_strategy_settings": {
+    "ema_fast": 6,
+    "ema_slow": 20,
+    "rsi_length": 12,
+    "rsi_long_level": 53,
+    "rsi_short_level": 47,
+    "adx_length": 8,
+    "adx_threshold": 12,
+    "volume_sma_length": 14,
+    "atr_length": 14,
+    "atr_sl_multiplier": 2.5,
+    "atr_tp_multiplier": 3.0,
+    "atr_trail_multiplier": 2.0,
+    "use_trailing_stop": true,
+    "allow_long": true,
+    "allow_short": true,
+    "confirmation_bars": 1,
+    "signal_freshness_minutes": 5,
+    "timeframe": "15m",
+    "candles_limit": 250,
+    "check_interval_seconds": 60,
+    "trade_cooldown_seconds": 900,
+    "trade_amount_usdt": 100
+  },
+  
+  "optional_indicators": {
+    "volume_enabled": true,
+    "macd_enabled": false,
+    "support_resistance_enabled": false
+  },
+  
+  "sideways_detection": {
+    "enabled": true,
+    "adx_threshold": 15,
+    "choppiness_threshold": 61.8
+  }
+}
